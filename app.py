@@ -2,6 +2,19 @@ from minesweeper import api
 from minesweeper.utilities import Point, points_around_point
 import random
 from appJar import gui
+import sys
+import os
+
+
+def start():
+    app.addLabel("intro", "Welcome to fuentes' lil thing")
+    app.addButtons(["Play", "Run tests (Manual)",
+                    "Run tests (Fast)", "Exit"], menu)
+
+
+def restart():
+    python = sys.executable
+    os.execl(python, python, * sys.argv)
 
 
 def click(button):
@@ -14,9 +27,19 @@ def click(button):
     elif result == 1:
         print('Game lost')
         draw()
+        app.startSubWindow("Game lost", modal=True)
+        app.addLabel("Game lost")
+        app.addButton("Go back", restart)
+        app.stopSubWindow()
+        app.showSubWindow("Game lost")
     elif result == 2:
         print('Game won')
         draw()
+        app.startSubWindow("Game won", modal=True)
+        app.addLabel("Game won")
+        app.addButton("Go back", restart)
+        app.stopSubWindow()
+        app.showSubWindow("Game won")
 
 
 def flag(name):
@@ -34,6 +57,31 @@ def makeFlag(label):
     return f
 
 
+def executeRecommended():
+    app.destroySubWindow("AI")
+    # TODO: Execute best move (click with less probability of bomb)
+    click(str(random.randint(0, 4))+','+str(random.randint(0, 4)))
+
+
+def calculateAll():
+    return calculate(True, True)
+
+
+def calculateAndShow():
+    return calculate(False, True)
+
+
+def calculate(all: bool, show: bool=False):
+    if (show):
+        app.openSubWindow("AI")
+        app.removeButton("Calculate next move")
+        app.removeButton("Calculate all probabilities")
+        # TODO: Add evidence, execute the bayesian network
+        app.addLabel("I recommend <this>")
+        app.addButton("Execute", executeRecommended)
+        app.stopSubWindow()
+
+
 def draw():
     app.removeAllWidgets()
     app.setSticky("news")
@@ -46,6 +94,19 @@ def draw():
             app.getButtonWidget(label).bind(
                 '<3>', makeFlag(label))
             app.setButton(label, str(field[x, y]))
+    location = app.getLocation()
+    try:
+        app.destroySubWindow("AI")
+    except:
+        pass
+    app.startSubWindow("AI", title="Bayesian AI")
+    app.setLocation(location[0]+800, location[1])
+    app.addLabel("Bayesian AI")
+    app.addLabel(str(field.mines_remaining()) + " Mines remaining")
+    app.addButton("Calculate next move", calculateAndShow)
+    app.addButton("Calculate all probabilities", calculateAll)
+    app.stopSubWindow()
+    app.showSubWindow("AI")
 
 
 # def game(size: Point, mines: int):
@@ -75,10 +136,11 @@ def reveal(x, y):
 
 
 def playMenu(button):
-    w = int(app.getEntry("Weigth"))
+    w = int(app.getEntry("Width"))
     h = int(app.getEntry("Height"))
     m = int(app.getEntry("Mines"))
     global field
+    # TODO: Create the bayesian network for the first time
     field = api.Minefield(Point(w, h), m)
     draw()
 
@@ -88,7 +150,7 @@ def menu(button):
         app.stop()
     elif button == "Play":
         app.removeAllWidgets()
-        app.addLabelNumericEntry("Weigth")
+        app.addLabelNumericEntry("Width")
         app.addLabelNumericEntry("Height")
         app.addLabelNumericEntry("Mines")
         app.addButton("Go", playMenu)
@@ -99,7 +161,5 @@ def menu(button):
 
 
 app = gui('El trabajito de IA', '600x400')
-app.addLabel("intro", "Welcome to fuentes' lil thing")
-app.addButtons(["Play", "Run tests (Manual)",
-                "Run tests (Fast)", "Exit"], menu)
+app.setStartFunction(start)
 app.go()

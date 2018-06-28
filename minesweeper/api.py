@@ -176,3 +176,6 @@ class Minefield:
     def is_fully_revealed(self) -> bool:
         """Check if the minefield is fully revealed, i.e. game won."""
         return all(cell.visible or cell.is_mine() for cell in self)
+
+    def mines_remaining(self) -> int:  # Custom method
+        return self.n_mines - sum(cell.flagged for cell in self)
