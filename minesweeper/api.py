@@ -3,7 +3,7 @@
 import random
 import typing
 
-from utilities import Point, points_around_point
+from minesweeper.utilities import Point, points_around_point
 
 
 __all__ = (
@@ -49,7 +49,7 @@ class Cell:
         if self.flagged:
             return 'f'
         if not self.visible:
-            return ' '
+            return ''
         if self.is_mine():
             return 'X'
         return str(self.value)
@@ -80,7 +80,7 @@ class Minefield:
         return len(self._cells)
 
     def __repr__(self) -> str:
-        return 'Minefield({self.width}x{self.height}, n_mines={self.n_mines}'.format(self=self)
+        return 'Minefield({self.width}x{self.height}, n_mines={self.n_mines})'.format(self=self)
 
     def __str__(self) -> str:
         return '\n'.join(
@@ -91,7 +91,8 @@ class Minefield:
     def __getitem__(self, point: Point) -> Cell:
         x, y = point  # Supports normal tuples along Point
         if x < 0 or y < 0:
-            raise IndexError('Minefield doesn\'t support negative coordinates.')
+            raise IndexError(
+                'Minefield doesn\'t support negative coordinates.')
         return self._cells[y][x]
 
     def __setitem__(self, point: Point, cell: Cell) -> None:
