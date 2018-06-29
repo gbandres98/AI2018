@@ -4,6 +4,8 @@ import random
 from appJar import gui
 import sys
 import os
+from NetworkGenerator import networkGenerator
+import pgmpy.inference as pgmi  # Inferencia probabilística exacta
 
 
 def start():
@@ -77,10 +79,45 @@ def calculate(all: bool, show: bool=False):
         app.removeButton("Calculate next move")
         app.removeButton("Calculate all probabilities")
         # TODO: Add evidence, execute the bayesian network
+        
         app.addLabel("I recommend <this>")
         app.addButton("Execute", executeRecommended)
         app.stopSubWindow()
 
+def fieldState():
+    cells = nonVisibleCells.copy()
+    evidences = {}
+
+    for w in range(field.width):
+        for h in range(field.height):
+            c = cells[w][h]
+            if c.visible:
+                evidences['X'+str(w)+str(h)]=0
+                evidences['Y'+str(w)+str(h)]=c.value
+                nonVisibleCells.remove(c)
+            elif c.flagged:
+                evidences['X'+str(w)+str(h)]=1
+                nonVisibleCells.remove(c)
+
+    
+    return evidences
+
+def nextMove():
+    networkCopy = network.copy()
+    evidences = fieldState()
+    #TODO completar 'nodosDescartados' y 'casillasParaIterar'
+    '''
+    networkCopy.remove_nodes_from(nodosDescartados)
+    networkVE = pgmi.VariableElimination(networkCopy)
+    consulta = networkVE.query([casillasParaIterarSet[p]], evidences)
+'''
+    move = ""
+    cell = [0,0]
+    return [move,cell]
+    
+
+    
+    
 
 def draw():
     app.removeAllWidgets()
@@ -140,8 +177,12 @@ def playMenu(button):
     h = int(app.getEntry("Height"))
     m = int(app.getEntry("Mines"))
     global field
-    # TODO: Create the bayesian network for the first time
+    global network
+    global nonVisibleCells
+    # DONE: Create the bayesian network for the first time
     field = api.Minefield(Point(w, h), m)
+    network = networkGenerator(w,h,m)
+    nonVisibleCells = field._cells
     draw()
 
 

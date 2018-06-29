@@ -111,7 +111,8 @@ def networkGenerator(width,height,mines):
         Model_minesweeper.add_cpds(cpd)
     for e in cpdsY:
         Model_minesweeper.add_cpds(e)
-
+    
+    return Model_minesweeper
     #for m in Model_minesweeper.cpds: print(m)
   #  neighbours = []
   #  neighbours.append([('X00','Y01'),('X00','Y10')])
